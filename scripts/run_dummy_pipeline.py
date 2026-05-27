@@ -1,3 +1,4 @@
+import argparse
 from pathlib import Path
 
 from world_vla_graspqa.action.dummy_action_generator import DummyActionGenerator
@@ -12,8 +13,40 @@ from world_vla_graspqa.world_model.dummy_world_model import DummyWorldModel
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
+def parse_args() -> argparse.Namespace:
+    """Parse command line arguments."""
+
+    parser = argparse.ArgumentParser(
+        description="Run the dummy World-VLA-GraspQA pipeline."
+    )
+    parser.add_argument(
+        "--config",
+        type=str,
+        default="configs/dummy_pipeline.yaml",
+        help="Path to the pipeline config file.",
+    )
+    parser.add_argument(
+        "--run-name",
+        type=str,
+        default="dummy",
+        help="Name suffix for the output run directory.",
+    )
+    return parser.parse_args()
+
+
+def resolve_project_path(path: str | Path) -> Path:
+    """Resolve a path relative to the project root if needed."""
+
+    path = Path(path)
+    if path.is_absolute():
+        return path
+    return PROJECT_ROOT / path
+
+
 def main() -> None:
-    config_path = PROJECT_ROOT / "configs" / "dummy_pipeline.yaml"
+    args = parse_args()
+
+    config_path = resolve_project_path(args.config)
     config = load_yaml_config(config_path)
 
     instruction = config["scene"]["instruction"]
@@ -22,10 +55,11 @@ def main() -> None:
 
     run_dir = create_run_dir(
         output_root=PROJECT_ROOT / "outputs" / "dummy_pipeline",
-        run_name="dummy",
+        run_name=args.run_name,
     )
     save_yaml(config, run_dir / "config.yaml")
 
+    log_step("Config", f"Loaded config from {config_path}")
     log_step("Observation", "Loaded dummy scene.")
     log_step("Instruction", instruction)
 
@@ -49,6 +83,8 @@ def main() -> None:
     best_action = planner.select_action(scored_actions)
 
     result = {
+        "config_path": str(config_path),
+        "run_name": args.run_name,
         "instruction": instruction,
         "question": question,
         "detected_objects": detected_objects,
