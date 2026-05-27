@@ -5,7 +5,7 @@ from world_vla_graspqa.graspqa.dummy_graspqa import DummyGraspQA
 from world_vla_graspqa.perception.dummy_perception import DummyPerception
 from world_vla_graspqa.planner.dummy_planner import DummyPlanner
 from world_vla_graspqa.utils.config import load_yaml_config
-from world_vla_graspqa.utils.io import save_json
+from world_vla_graspqa.utils.io import create_run_dir, save_json, save_yaml
 from world_vla_graspqa.utils.logger import log_step
 from world_vla_graspqa.world_model.dummy_world_model import DummyWorldModel
 
@@ -19,6 +19,12 @@ def main() -> None:
     instruction = config["scene"]["instruction"]
     objects = config["perception"]["objects"]
     question = config["graspqa"]["question"]
+
+    run_dir = create_run_dir(
+        output_root=PROJECT_ROOT / "outputs" / "dummy_pipeline",
+        run_name="dummy",
+    )
+    save_yaml(config, run_dir / "config.yaml")
 
     log_step("Observation", "Loaded dummy scene.")
     log_step("Instruction", instruction)
@@ -52,8 +58,8 @@ def main() -> None:
         "best_action": best_action,
     }
 
-    output_path = PROJECT_ROOT / "outputs" / "dummy_pipeline_result.json"
-    save_json(result, output_path)
+    result_path = run_dir / "result.json"
+    save_json(result, result_path)
 
     log_step(
         "Result",
@@ -64,7 +70,7 @@ def main() -> None:
             f"predicted_success={best_action['predicted_success']}"
         ),
     )
-    log_step("Output", f"Saved result to {output_path}")
+    log_step("Output", f"Saved run artifacts to {run_dir}")
 
 
 if __name__ == "__main__":
