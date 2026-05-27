@@ -1,11 +1,4 @@
 from pathlib import Path
-import sys
-
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-SRC_ROOT = PROJECT_ROOT / "src"
-
-if str(SRC_ROOT) not in sys.path:
-    sys.path.insert(0, str(SRC_ROOT))
 
 from world_vla_graspqa.action.dummy_action_generator import DummyActionGenerator
 from world_vla_graspqa.graspqa.dummy_graspqa import DummyGraspQA
@@ -14,6 +7,8 @@ from world_vla_graspqa.planner.dummy_planner import DummyPlanner
 from world_vla_graspqa.utils.config import load_yaml_config
 from world_vla_graspqa.utils.logger import log_step
 from world_vla_graspqa.world_model.dummy_world_model import DummyWorldModel
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 def main() -> None:
