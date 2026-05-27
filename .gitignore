@@ -45,3 +45,6 @@ weights/
 
 # Environment
 .env
+
+# Experiment outputs
+outputs/

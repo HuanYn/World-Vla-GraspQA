@@ -5,6 +5,7 @@ from world_vla_graspqa.graspqa.dummy_graspqa import DummyGraspQA
 from world_vla_graspqa.perception.dummy_perception import DummyPerception
 from world_vla_graspqa.planner.dummy_planner import DummyPlanner
 from world_vla_graspqa.utils.config import load_yaml_config
+from world_vla_graspqa.utils.io import save_json
 from world_vla_graspqa.utils.logger import log_step
 from world_vla_graspqa.world_model.dummy_world_model import DummyWorldModel
 
@@ -41,6 +42,19 @@ def main() -> None:
     planner = DummyPlanner()
     best_action = planner.select_action(scored_actions)
 
+    result = {
+        "instruction": instruction,
+        "question": question,
+        "detected_objects": detected_objects,
+        "target_object": target_object,
+        "candidate_actions": candidate_actions,
+        "scored_actions": scored_actions,
+        "best_action": best_action,
+    }
+
+    output_path = PROJECT_ROOT / "outputs" / "dummy_pipeline_result.json"
+    save_json(result, output_path)
+
     log_step(
         "Result",
         (
@@ -50,6 +64,7 @@ def main() -> None:
             f"predicted_success={best_action['predicted_success']}"
         ),
     )
+    log_step("Output", f"Saved result to {output_path}")
 
 
 if __name__ == "__main__":
