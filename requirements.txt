@@ -1,0 +1,12 @@
+numpy
+pandas
+matplotlib
+tqdm
+opencv-python
+pillow
+pyyaml
+scikit-learn
+jupyter
+pytest
+black
+ruff
