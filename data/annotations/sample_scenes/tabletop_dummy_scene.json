@@ -1,27 +1,39 @@
 {
+  "schema_version": "0.1.0",
   "scene_id": "tabletop_dummy_scene",
   "image_path": "data/raw/sample_scenes/tabletop_dummy_scene.png",
+  "description": "A simple tabletop scene with a red cube, a blue bowl, and a yellow banana.",
   "objects": [
     {
+      "object_id": "obj_001",
       "name": "red cube",
-      "color": "red",
-      "shape": "cube",
-      "graspable": true,
-      "bbox": [130, 230, 230, 330]
+      "bbox": [130, 230, 230, 330],
+      "attributes": {
+        "color": "red",
+        "shape": "cube",
+        "graspable": true
+      }
     },
     {
+      "object_id": "obj_002",
       "name": "blue bowl",
-      "color": "blue",
-      "shape": "bowl",
-      "graspable": false,
-      "bbox": [350, 220, 500, 340]
+      "bbox": [350, 220, 500, 340],
+      "attributes": {
+        "color": "blue",
+        "shape": "bowl",
+        "graspable": false
+      }
     },
     {
+      "object_id": "obj_003",
       "name": "yellow banana",
-      "color": "yellow",
-      "shape": "banana",
-      "graspable": true,
-      "bbox": [240, 130, 390, 280]
+      "bbox": [240, 130, 390, 280],
+      "attributes": {
+        "color": "yellow",
+        "shape": "banana",
+        "graspable": true
+      }
     }
-  ]
+  ],
+  "relations": []
 }

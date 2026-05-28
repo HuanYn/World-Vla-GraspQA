@@ -2,7 +2,12 @@ import json
 
 import pytest
 
-from world_vla_graspqa.utils.scene import get_scene_objects, load_scene_annotation
+from world_vla_graspqa.utils.scene import (
+    get_scene_objects,
+    load_scene_annotation,
+    normalize_scene_object,
+    validate_bbox,
+)
 
 
 def test_load_scene_annotation_reads_json(tmp_path):
@@ -11,9 +16,14 @@ def test_load_scene_annotation_reads_json(tmp_path):
         "scene_id": "test_scene",
         "objects": [
             {
+                "object_id": "obj_001",
                 "name": "red cube",
-                "graspable": True,
                 "bbox": [10, 20, 30, 40],
+                "attributes": {
+                    "color": "red",
+                    "shape": "cube",
+                    "graspable": True,
+                },
             }
         ],
     }
@@ -33,12 +43,40 @@ def test_load_scene_annotation_raises_for_missing_file(tmp_path):
         load_scene_annotation(missing_path)
 
 
-def test_get_scene_objects_returns_objects():
+def test_normalize_scene_object_flattens_attributes():
+    obj = {
+        "object_id": "obj_003",
+        "name": "yellow banana",
+        "bbox": [10, 20, 60, 80],
+        "attributes": {
+            "color": "yellow",
+            "shape": "banana",
+            "graspable": True,
+        },
+    }
+
+    normalized = normalize_scene_object(obj)
+
+    assert normalized["object_id"] == "obj_003"
+    assert normalized["name"] == "yellow banana"
+    assert normalized["color"] == "yellow"
+    assert normalized["shape"] == "banana"
+    assert normalized["graspable"] is True
+    assert normalized["bbox"] == [10, 20, 60, 80]
+
+
+def test_get_scene_objects_returns_normalized_objects():
     annotation = {
         "objects": [
             {
-                "name": "yellow banana",
-                "graspable": True,
+                "object_id": "obj_001",
+                "name": "red cube",
+                "bbox": [10, 20, 30, 40],
+                "attributes": {
+                    "color": "red",
+                    "shape": "cube",
+                    "graspable": True,
+                },
             }
         ]
     }
@@ -46,7 +84,9 @@ def test_get_scene_objects_returns_objects():
     objects = get_scene_objects(annotation)
 
     assert len(objects) == 1
-    assert objects[0]["name"] == "yellow banana"
+    assert objects[0]["name"] == "red cube"
+    assert objects[0]["color"] == "red"
+    assert objects[0]["graspable"] is True
 
 
 def test_get_scene_objects_raises_for_invalid_objects():
@@ -56,3 +96,8 @@ def test_get_scene_objects_raises_for_invalid_objects():
 
     with pytest.raises(ValueError):
         get_scene_objects(annotation)
+
+
+def test_validate_bbox_raises_for_invalid_bbox():
+    with pytest.raises(ValueError):
+        validate_bbox([10, 20, 5, 40])
