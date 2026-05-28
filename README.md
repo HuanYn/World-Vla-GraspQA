@@ -463,6 +463,29 @@ right_side → 0.60
 - [ ] 添加重新规划循环
 - [ ] 添加 memory 和 critic 模块
 
+## Stage 2 Progress
+
+当前 Stage 2 已完成的内容：
+
+- 添加了可生成的样例桌面场景图片。
+- 添加了图像读取工具。
+- 添加了包含物体 bbox 的场景标注 JSON。
+- 添加了场景标注读取工具。
+- 更新 dummy pipeline，使其读取 `image_path` 和 `annotation_path`。
+- 添加了 annotation 可视化脚本，可以把 bbox 画到图片上。
+- 添加了图像读取、场景标注读取、可视化相关测试。
+
+常用 Stage 2 命令：
+
+```bash
+python scripts/create_sample_scene.py
+python scripts/run_dummy_pipeline.py --config configs/dummy_pipeline.yaml --run-name image_test
+python scripts/visualize_scene_annotation.py
+pytest
+ruff check .
+black --check .
+```
+
 ## License
 
 MIT License.
