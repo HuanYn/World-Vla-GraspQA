@@ -6,6 +6,7 @@ from world_vla_graspqa.graspqa.dummy_graspqa import DummyGraspQA
 from world_vla_graspqa.perception.dummy_perception import DummyPerception
 from world_vla_graspqa.planner.dummy_planner import DummyPlanner
 from world_vla_graspqa.utils.config import load_yaml_config
+from world_vla_graspqa.utils.image import get_image_info, load_image
 from world_vla_graspqa.utils.io import create_run_dir, save_json, save_yaml
 from world_vla_graspqa.utils.logger import log_step
 from world_vla_graspqa.world_model.dummy_world_model import DummyWorldModel
@@ -50,6 +51,9 @@ def main() -> None:
     config = load_yaml_config(config_path)
 
     instruction = config["scene"]["instruction"]
+    image_path = resolve_project_path(config["scene"]["image_path"])
+    image = load_image(image_path)
+    image_info = get_image_info(image, image_path)
     objects = config["perception"]["objects"]
     question = config["graspqa"]["question"]
 
@@ -60,7 +64,14 @@ def main() -> None:
     save_yaml(config, run_dir / "config.yaml")
 
     log_step("Config", f"Loaded config from {config_path}")
-    log_step("Observation", "Loaded dummy scene.")
+    log_step("Observation", f"Loaded image from {image_path}")
+    log_step(
+        "Observation",
+        (
+            f"Image size: {image_info['width']}x{image_info['height']}, "
+            f"mode={image_info['mode']}"
+        ),
+    )
     log_step("Instruction", instruction)
 
     perception = DummyPerception(objects=objects)
@@ -86,6 +97,7 @@ def main() -> None:
         "config_path": str(config_path),
         "run_name": args.run_name,
         "instruction": instruction,
+        "image_info": image_info,
         "question": question,
         "detected_objects": detected_objects,
         "target_object": target_object,

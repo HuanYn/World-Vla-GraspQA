@@ -48,3 +48,19 @@ weights/
 
 # Experiment outputs
 outputs/
+
+# Keep small sample scenes for demos
+!data/raw/sample_scenes/
+!data/raw/sample_scenes/*.png
+
+# Allow small demo sample scenes
+!data/
+!data/raw/
+!data/raw/sample_scenes/
+!data/raw/sample_scenes/*.png
+
+# Allow small demo sample scenes
+!data/
+!data/raw/
+!data/raw/sample_scenes/
+!data/raw/sample_scenes/*.png

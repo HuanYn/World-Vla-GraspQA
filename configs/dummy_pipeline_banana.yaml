@@ -1,29 +1,25 @@
 project:
   name: World-VLA-GraspQA
   stage: dummy_pipeline_banana
-
 scene:
-  image_path: null
-  instruction: "Pick up the yellow banana and place it into the blue bowl."
-
+  image_path: data/raw/sample_scenes/tabletop_dummy_scene.png
+  instruction: Pick up the yellow banana and place it into the blue bowl.
 perception:
   mode: dummy
   objects:
-    - name: red cube
-      color: red
-      shape: cube
-      graspable: true
-    - name: blue bowl
-      color: blue
-      shape: bowl
-      graspable: false
-    - name: yellow banana
-      color: yellow
-      shape: banana
-      graspable: true
-
+  - name: red cube
+    color: red
+    shape: cube
+    graspable: true
+  - name: blue bowl
+    color: blue
+    shape: bowl
+    graspable: false
+  - name: yellow banana
+    color: yellow
+    shape: banana
+    graspable: true
 graspqa:
-  question: "Which object should the robot grasp?"
-
+  question: Which object should the robot grasp?
 planner:
   strategy: max_success_probability
