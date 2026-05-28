@@ -4,6 +4,7 @@ project:
 scene:
   image_path: data/raw/sample_scenes/tabletop_dummy_scene.png
   instruction: Pick up the yellow banana and place it into the blue bowl.
+  annotation_path: data/annotations/sample_scenes/tabletop_dummy_scene.json
 perception:
   mode: dummy
   objects:

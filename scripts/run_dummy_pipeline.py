@@ -9,6 +9,7 @@ from world_vla_graspqa.utils.config import load_yaml_config
 from world_vla_graspqa.utils.image import get_image_info, load_image
 from world_vla_graspqa.utils.io import create_run_dir, save_json, save_yaml
 from world_vla_graspqa.utils.logger import log_step
+from world_vla_graspqa.utils.scene import get_scene_objects, load_scene_annotation
 from world_vla_graspqa.world_model.dummy_world_model import DummyWorldModel
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -52,9 +53,11 @@ def main() -> None:
 
     instruction = config["scene"]["instruction"]
     image_path = resolve_project_path(config["scene"]["image_path"])
+    annotation_path = resolve_project_path(config["scene"]["annotation_path"])
     image = load_image(image_path)
     image_info = get_image_info(image, image_path)
-    objects = config["perception"]["objects"]
+    scene_annotation = load_scene_annotation(annotation_path)
+    objects = get_scene_objects(scene_annotation)
     question = config["graspqa"]["question"]
 
     run_dir = create_run_dir(
@@ -65,6 +68,8 @@ def main() -> None:
 
     log_step("Config", f"Loaded config from {config_path}")
     log_step("Observation", f"Loaded image from {image_path}")
+    log_step("Observation", f"Loaded annotation from {annotation_path}")
+    log_step("Observation", f"Loaded annotation from {annotation_path}")
     log_step(
         "Observation",
         (
@@ -98,6 +103,7 @@ def main() -> None:
         "run_name": args.run_name,
         "instruction": instruction,
         "image_info": image_info,
+        "scene_annotation": scene_annotation,
         "question": question,
         "detected_objects": detected_objects,
         "target_object": target_object,

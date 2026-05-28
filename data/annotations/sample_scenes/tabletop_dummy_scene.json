@@ -1,0 +1,27 @@
+{
+  "scene_id": "tabletop_dummy_scene",
+  "image_path": "data/raw/sample_scenes/tabletop_dummy_scene.png",
+  "objects": [
+    {
+      "name": "red cube",
+      "color": "red",
+      "shape": "cube",
+      "graspable": true,
+      "bbox": [130, 230, 230, 330]
+    },
+    {
+      "name": "blue bowl",
+      "color": "blue",
+      "shape": "bowl",
+      "graspable": false,
+      "bbox": [350, 220, 500, 340]
+    },
+    {
+      "name": "yellow banana",
+      "color": "yellow",
+      "shape": "banana",
+      "graspable": true,
+      "bbox": [240, 130, 390, 280]
+    }
+  ]
+}
