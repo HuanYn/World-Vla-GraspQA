@@ -1,0 +1,70 @@
+{
+  "schema_version": "0.1.0",
+  "dataset_name": "dummy_action_outcomes",
+  "records": [
+    {
+      "scene_id": "tabletop_dummy_scene",
+      "target_object": "red cube",
+      "gripper_pose": "top_down",
+      "action_name": "grasp(red cube)",
+      "success": true,
+      "outcome": "object_grasped"
+    },
+    {
+      "scene_id": "tabletop_dummy_scene",
+      "target_object": "red cube",
+      "gripper_pose": "top_down",
+      "action_name": "grasp(red cube)",
+      "success": true,
+      "outcome": "object_grasped"
+    },
+    {
+      "scene_id": "tabletop_dummy_scene",
+      "target_object": "red cube",
+      "gripper_pose": "left_side",
+      "action_name": "grasp(red cube)",
+      "success": true,
+      "outcome": "object_grasped"
+    },
+    {
+      "scene_id": "tabletop_dummy_scene",
+      "target_object": "red cube",
+      "gripper_pose": "left_side",
+      "action_name": "grasp(red cube)",
+      "success": false,
+      "outcome": "missed_object"
+    },
+    {
+      "scene_id": "tabletop_dummy_scene",
+      "target_object": "red cube",
+      "gripper_pose": "right_side",
+      "action_name": "grasp(red cube)",
+      "success": false,
+      "outcome": "unstable_grasp"
+    },
+    {
+      "scene_id": "tabletop_dummy_scene",
+      "target_object": "yellow banana",
+      "gripper_pose": "top_down",
+      "action_name": "grasp(yellow banana)",
+      "success": true,
+      "outcome": "object_grasped"
+    },
+    {
+      "scene_id": "tabletop_dummy_scene",
+      "target_object": "yellow banana",
+      "gripper_pose": "left_side",
+      "action_name": "grasp(yellow banana)",
+      "success": false,
+      "outcome": "slipped"
+    },
+    {
+      "scene_id": "tabletop_dummy_scene",
+      "target_object": "yellow banana",
+      "gripper_pose": "right_side",
+      "action_name": "grasp(yellow banana)",
+      "success": true,
+      "outcome": "object_grasped"
+    }
+  ]
+}
