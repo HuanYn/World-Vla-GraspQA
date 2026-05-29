@@ -16,6 +16,12 @@ def create_dummy_result(path: Path, run_name: str, target_object: str) -> None:
         "config_path": f"configs/{run_name}.yaml",
         "run_name": run_name,
         "target_object": target_object,
+        "graspqa_result": {
+            "mode": "dummy_vlm",
+            "raw_response": target_object,
+            "parse_success": True,
+            "model_name": "dummy-vlm",
+        },
         "best_action": {
             "name": f"grasp({target_object})",
             "gripper_pose": "top_down",
@@ -74,6 +80,10 @@ def test_summarize_result_extracts_key_fields(tmp_path):
     assert row["best_action"] == "grasp(yellow banana)"
     assert row["gripper_pose"] == "top_down"
     assert row["predicted_success"] == 0.85
+    assert row["graspqa_mode"] == "dummy_vlm"
+    assert row["vlm_model_name"] == "dummy-vlm"
+    assert row["vlm_raw_response"] == "yellow banana"
+    assert row["vlm_parse_success"] is True
     assert row["config_path"] == "configs/banana.yaml"
 
 
@@ -87,6 +97,10 @@ def test_write_summary_creates_csv_file(tmp_path):
             "best_action": "grasp(red cube)",
             "gripper_pose": "top_down",
             "predicted_success": 0.85,
+            "graspqa_mode": "dummy_vlm",
+            "vlm_model_name": "dummy-vlm",
+            "vlm_raw_response": "red cube",
+            "vlm_parse_success": True,
             "config_path": "configs/dummy_pipeline.yaml",
         }
     ]
@@ -103,3 +117,7 @@ def test_write_summary_creates_csv_file(tmp_path):
     assert loaded_rows[0]["run_name"] == "cube"
     assert loaded_rows[0]["target_object"] == "red cube"
     assert loaded_rows[0]["best_action"] == "grasp(red cube)"
+    assert loaded_rows[0]["graspqa_mode"] == "dummy_vlm"
+    assert loaded_rows[0]["vlm_model_name"] == "dummy-vlm"
+    assert loaded_rows[0]["vlm_raw_response"] == "red cube"
+    assert loaded_rows[0]["vlm_parse_success"] == "True"
