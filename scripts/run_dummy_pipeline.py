@@ -1,5 +1,6 @@
 import argparse
 from pathlib import Path
+from typing import Any
 
 from world_vla_graspqa.action.dummy_action_generator import DummyActionGenerator
 from world_vla_graspqa.graspqa.dummy_graspqa import DummyGraspQA
@@ -12,6 +13,7 @@ from world_vla_graspqa.utils.io import create_run_dir, save_json, save_yaml
 from world_vla_graspqa.utils.logger import log_step
 from world_vla_graspqa.utils.scene import get_scene_objects, load_scene_annotation
 from world_vla_graspqa.world_model.dummy_world_model import DummyWorldModel
+from world_vla_graspqa.world_model.empirical_world_model import EmpiricalWorldModel
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -50,10 +52,10 @@ def answer_graspqa(
     mode: str,
     instruction: str,
     question: str,
-    detected_objects: list[dict],
-    scene_annotation: dict,
+    detected_objects: list[dict[str, Any]],
+    scene_annotation: dict[str, Any],
     image_path: Path,
-) -> tuple[str, dict]:
+) -> tuple[str, dict[str, Any]]:
     """Answer the GraspQA question with either rule-based or VLM-style backend."""
 
     if mode == "rule":
@@ -84,6 +86,33 @@ def answer_graspqa(
     raise ValueError(f"Unsupported GraspQA mode: {mode}")
 
 
+def build_world_model(config: dict[str, Any]) -> tuple[Any, dict[str, Any]]:
+    """Build a world model from config."""
+
+    world_model_config = config.get("world_model", {})
+    mode = world_model_config.get("mode", "dummy")
+
+    if mode == "dummy":
+        return DummyWorldModel(), {
+            "mode": "dummy",
+        }
+
+    if mode == "empirical":
+        dataset_path = resolve_project_path(world_model_config["dataset_path"])
+        default_success = float(world_model_config.get("default_success", 0.5))
+        world_model = EmpiricalWorldModel.from_dataset(
+            dataset_path=dataset_path,
+            default_success=default_success,
+        )
+        return world_model, {
+            "mode": "empirical",
+            "dataset_path": str(dataset_path),
+            "default_success": default_success,
+        }
+
+    raise ValueError(f"Unsupported world model mode: {mode}")
+
+
 def main() -> None:
     args = parse_args()
 
@@ -93,12 +122,16 @@ def main() -> None:
     instruction = config["scene"]["instruction"]
     image_path = resolve_project_path(config["scene"]["image_path"])
     annotation_path = resolve_project_path(config["scene"]["annotation_path"])
+
     image = load_image(image_path)
     image_info = get_image_info(image, image_path)
     scene_annotation = load_scene_annotation(annotation_path)
     objects = get_scene_objects(scene_annotation)
+
     question = config["graspqa"]["question"]
     graspqa_mode = config["graspqa"].get("mode", "rule")
+
+    world_model, world_model_info = build_world_model(config)
 
     run_dir = create_run_dir(
         output_root=PROJECT_ROOT / "outputs" / "dummy_pipeline",
@@ -118,6 +151,7 @@ def main() -> None:
     )
     log_step("Instruction", instruction)
     log_step("GraspQA", f"Using mode: {graspqa_mode}")
+    log_step("WorldModel", f"Using mode: {world_model_info['mode']}")
 
     perception = DummyPerception(objects=objects)
     detected_objects = perception.detect_objects()
@@ -135,7 +169,6 @@ def main() -> None:
     action_generator = DummyActionGenerator()
     candidate_actions = action_generator.generate(target_object=target_object)
 
-    world_model = DummyWorldModel()
     scored_actions = world_model.predict(candidate_actions)
 
     planner = DummyPlanner()
@@ -148,6 +181,7 @@ def main() -> None:
         "image_info": image_info,
         "scene_annotation": scene_annotation,
         "graspqa_result": graspqa_result,
+        "world_model_info": world_model_info,
         "question": question,
         "detected_objects": detected_objects,
         "target_object": target_object,

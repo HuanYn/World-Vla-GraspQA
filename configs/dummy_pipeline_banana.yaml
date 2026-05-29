@@ -25,3 +25,7 @@ graspqa:
   mode: dummy_vlm
 planner:
   strategy: max_success_probability
+world_model:
+  mode: empirical
+  dataset_path: data/action_outcomes/dummy_action_outcomes.json
+  default_success: 0.5
