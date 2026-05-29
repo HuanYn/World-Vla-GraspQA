@@ -69,7 +69,9 @@ def test_collect_result_paths_returns_empty_list_for_missing_root(tmp_path):
 
 def test_summarize_result_extracts_key_fields(tmp_path):
     project_root = tmp_path
-    result_path = project_root / "outputs" / "dummy_pipeline" / "run_001" / "result.json"
+    result_path = (
+        project_root / "outputs" / "dummy_pipeline" / "run_001" / "result.json"
+    )
     create_dummy_result(
         result_path,
         run_name="banana",
@@ -86,7 +88,10 @@ def test_summarize_result_extracts_key_fields(tmp_path):
     assert row["predicted_success"] == 0.85
     assert row["best_action_world_model_type"] == "empirical"
     assert row["world_model_mode"] == "empirical"
-    assert row["world_model_dataset_path"] == "data/action_outcomes/dummy_action_outcomes.json"
+    assert (
+        row["world_model_dataset_path"]
+        == "data/action_outcomes/dummy_action_outcomes.json"
+    )
     assert row["graspqa_mode"] == "dummy_vlm"
     assert row["vlm_model_name"] == "dummy-vlm"
     assert row["vlm_raw_response"] == "yellow banana"
