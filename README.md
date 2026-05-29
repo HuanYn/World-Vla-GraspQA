@@ -532,6 +532,70 @@ response parser
 target_object
 ```
 
+## Stage 4 Progress
+
+当前 Stage 4 已完成的内容：
+
+- 定义了 action-outcome 数据格式。
+- 添加了样例动作结果数据集 `data/action_outcomes/dummy_action_outcomes.json`。
+- 添加了 action-outcome dataset 读取与统计工具。
+- 添加了 EmpiricalWorldModel，基于历史动作结果统计成功率。
+- 主 pipeline 已支持通过 `world_model.mode` 切换世界模型。
+- 当前支持 `dummy` 和 `empirical` 两种 world model。
+- summary CSV 已加入 world model 相关字段。
+- 添加了 dummy world model 对照配置。
+- 添加了一键运行 world model 对比实验脚本。
+
+常用 Stage 4 命令：
+
+```bash
+python scripts/run_empirical_world_model.py --target-object "red cube"
+python scripts/run_empirical_world_model.py --target-object "yellow banana"
+python scripts/run_dummy_pipeline.py --config configs/dummy_pipeline.yaml --run-name empirical_pipeline_cube
+python scripts/run_dummy_pipeline.py --config configs/dummy_pipeline_cube_dummywm.yaml --run-name cube_dummy_wm
+python scripts/run_world_model_comparison.py
+python scripts/summarize_dummy_results.py
+pytest
+ruff check .
+black --check .
+```
+
+当前 world model 数据流：
+
+```text
+action-outcome dataset
+  ↓
+EmpiricalWorldModel
+  ↓
+candidate actions
+  ↓
+predicted_success / predicted_result
+  ↓
+planner
+  ↓
+best_action
+```
+
+当前主 pipeline 最小闭环：
+
+```text
+image + annotation
+  ↓
+dummy_vlm GraspQA
+  ↓
+target_object
+  ↓
+candidate actions
+  ↓
+empirical world model
+  ↓
+predicted_success
+  ↓
+planner
+  ↓
+best_action
+```
+
 ## License
 
 MIT License.
