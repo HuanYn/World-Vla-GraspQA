@@ -17,6 +17,7 @@ def summarize_result(result_path: Path, project_root: Path) -> dict[str, Any]:
     result = load_json(result_path)
     best_action = result["best_action"]
     graspqa_result = result.get("graspqa_result", {})
+    world_model_info = result.get("world_model_info", {})
 
     return {
         "run_dir": str(result_path.parent.relative_to(project_root)),
@@ -25,6 +26,9 @@ def summarize_result(result_path: Path, project_root: Path) -> dict[str, Any]:
         "best_action": best_action.get("name", ""),
         "gripper_pose": best_action.get("gripper_pose", ""),
         "predicted_success": best_action.get("predicted_success", ""),
+        "best_action_world_model_type": best_action.get("world_model_type", ""),
+        "world_model_mode": world_model_info.get("mode", ""),
+        "world_model_dataset_path": world_model_info.get("dataset_path", ""),
         "graspqa_mode": graspqa_result.get("mode", ""),
         "vlm_model_name": graspqa_result.get("model_name", ""),
         "vlm_raw_response": graspqa_result.get("raw_response", ""),
@@ -54,6 +58,9 @@ def write_summary(rows: list[dict[str, Any]], output_path: Path) -> None:
         "best_action",
         "gripper_pose",
         "predicted_success",
+        "best_action_world_model_type",
+        "world_model_mode",
+        "world_model_dataset_path",
         "graspqa_mode",
         "vlm_model_name",
         "vlm_raw_response",

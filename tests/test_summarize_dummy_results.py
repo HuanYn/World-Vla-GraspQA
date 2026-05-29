@@ -22,10 +22,16 @@ def create_dummy_result(path: Path, run_name: str, target_object: str) -> None:
             "parse_success": True,
             "model_name": "dummy-vlm",
         },
+        "world_model_info": {
+            "mode": "empirical",
+            "dataset_path": "data/action_outcomes/dummy_action_outcomes.json",
+            "default_success": 0.5,
+        },
         "best_action": {
             "name": f"grasp({target_object})",
             "gripper_pose": "top_down",
             "predicted_success": 0.85,
+            "world_model_type": "empirical",
         },
     }
 
@@ -63,9 +69,7 @@ def test_collect_result_paths_returns_empty_list_for_missing_root(tmp_path):
 
 def test_summarize_result_extracts_key_fields(tmp_path):
     project_root = tmp_path
-    result_path = (
-        project_root / "outputs" / "dummy_pipeline" / "run_001" / "result.json"
-    )
+    result_path = project_root / "outputs" / "dummy_pipeline" / "run_001" / "result.json"
     create_dummy_result(
         result_path,
         run_name="banana",
@@ -80,6 +84,9 @@ def test_summarize_result_extracts_key_fields(tmp_path):
     assert row["best_action"] == "grasp(yellow banana)"
     assert row["gripper_pose"] == "top_down"
     assert row["predicted_success"] == 0.85
+    assert row["best_action_world_model_type"] == "empirical"
+    assert row["world_model_mode"] == "empirical"
+    assert row["world_model_dataset_path"] == "data/action_outcomes/dummy_action_outcomes.json"
     assert row["graspqa_mode"] == "dummy_vlm"
     assert row["vlm_model_name"] == "dummy-vlm"
     assert row["vlm_raw_response"] == "yellow banana"
@@ -97,6 +104,9 @@ def test_write_summary_creates_csv_file(tmp_path):
             "best_action": "grasp(red cube)",
             "gripper_pose": "top_down",
             "predicted_success": 0.85,
+            "best_action_world_model_type": "empirical",
+            "world_model_mode": "empirical",
+            "world_model_dataset_path": "data/action_outcomes/dummy_action_outcomes.json",
             "graspqa_mode": "dummy_vlm",
             "vlm_model_name": "dummy-vlm",
             "vlm_raw_response": "red cube",
@@ -117,6 +127,8 @@ def test_write_summary_creates_csv_file(tmp_path):
     assert loaded_rows[0]["run_name"] == "cube"
     assert loaded_rows[0]["target_object"] == "red cube"
     assert loaded_rows[0]["best_action"] == "grasp(red cube)"
+    assert loaded_rows[0]["best_action_world_model_type"] == "empirical"
+    assert loaded_rows[0]["world_model_mode"] == "empirical"
     assert loaded_rows[0]["graspqa_mode"] == "dummy_vlm"
     assert loaded_rows[0]["vlm_model_name"] == "dummy-vlm"
     assert loaded_rows[0]["vlm_raw_response"] == "red cube"
