@@ -3,6 +3,7 @@ from pathlib import Path
 
 from world_vla_graspqa.action.dummy_action_generator import DummyActionGenerator
 from world_vla_graspqa.graspqa.dummy_graspqa import DummyGraspQA
+from world_vla_graspqa.graspqa.vlm_graspqa import VLMGraspQA
 from world_vla_graspqa.perception.dummy_perception import DummyPerception
 from world_vla_graspqa.planner.dummy_planner import DummyPlanner
 from world_vla_graspqa.utils.config import load_yaml_config
@@ -45,6 +46,46 @@ def resolve_project_path(path: str | Path) -> Path:
     return PROJECT_ROOT / path
 
 
+def answer_graspqa(
+    mode: str,
+    instruction: str,
+    question: str,
+    detected_objects: list[dict],
+    scene_annotation: dict,
+    image_path: Path,
+) -> tuple[str, dict]:
+    """Answer the GraspQA question with either rule-based or VLM-style backend."""
+
+    if mode == "rule":
+        graspqa = DummyGraspQA()
+        target_object = graspqa.answer(
+            question=question,
+            objects=detected_objects,
+            instruction=instruction,
+        )
+        return target_object, {
+            "mode": mode,
+            "raw_response": target_object,
+            "parse_success": True,
+        }
+
+    if mode == "dummy_vlm":
+        graspqa = VLMGraspQA()
+        parsed_response = graspqa.answer(
+            instruction=instruction,
+            question=question,
+            scene_annotation=scene_annotation,
+            image_path=image_path,
+        )
+        return parsed_response.target_object, {
+            "mode": mode,
+            "raw_response": parsed_response.raw_response,
+            "parse_success": parsed_response.parse_success,
+        }
+
+    raise ValueError(f"Unsupported GraspQA mode: {mode}")
+
+
 def main() -> None:
     args = parse_args()
 
@@ -59,6 +100,7 @@ def main() -> None:
     scene_annotation = load_scene_annotation(annotation_path)
     objects = get_scene_objects(scene_annotation)
     question = config["graspqa"]["question"]
+    graspqa_mode = config["graspqa"].get("mode", "rule")
 
     run_dir = create_run_dir(
         output_root=PROJECT_ROOT / "outputs" / "dummy_pipeline",
@@ -69,7 +111,6 @@ def main() -> None:
     log_step("Config", f"Loaded config from {config_path}")
     log_step("Observation", f"Loaded image from {image_path}")
     log_step("Observation", f"Loaded annotation from {annotation_path}")
-    log_step("Observation", f"Loaded annotation from {annotation_path}")
     log_step(
         "Observation",
         (
@@ -78,16 +119,20 @@ def main() -> None:
         ),
     )
     log_step("Instruction", instruction)
+    log_step("GraspQA", f"Using mode: {graspqa_mode}")
 
     perception = DummyPerception(objects=objects)
     detected_objects = perception.detect_objects()
 
-    graspqa = DummyGraspQA()
-    target_object = graspqa.answer(
-        question=question,
-        objects=detected_objects,
+    target_object, graspqa_result = answer_graspqa(
+        mode=graspqa_mode,
         instruction=instruction,
+        question=question,
+        detected_objects=detected_objects,
+        scene_annotation=scene_annotation,
+        image_path=image_path,
     )
+    log_step("GraspQA", f"Answer: {target_object}")
 
     action_generator = DummyActionGenerator()
     candidate_actions = action_generator.generate(target_object=target_object)
@@ -104,6 +149,7 @@ def main() -> None:
         "instruction": instruction,
         "image_info": image_info,
         "scene_annotation": scene_annotation,
+        "graspqa_result": graspqa_result,
         "question": question,
         "detected_objects": detected_objects,
         "target_object": target_object,
