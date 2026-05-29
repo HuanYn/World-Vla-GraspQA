@@ -486,6 +486,52 @@ ruff check .
 black --check .
 ```
 
+## Stage 3 Progress
+
+当前 Stage 3 已完成的内容：
+
+- 添加了 GraspQA prompt builder。
+- 添加了 prompt 预览脚本。
+- 添加了 Dummy VLM client，用于模拟 VLM 输出。
+- 添加了 VLM response parser，用于解析模型原始回答。
+- 添加了 VLMGraspQA 模块，将 prompt、VLM client 和 parser 串起来。
+- 主 pipeline 已支持通过 `graspqa.mode` 使用 `dummy_vlm`。
+- pipeline 输出会保存 GraspQA prompt trace，包括 `system_prompt`、`user_prompt`、`raw_response`、`parse_success` 和 `model_name`。
+- summary CSV 已加入 VLM/GraspQA 相关字段。
+- 添加了 standalone GraspQA runner，可单独运行 GraspQA 并保存结果。
+
+常用 Stage 3 命令：
+
+```bash
+python scripts/preview_graspqa_prompt.py --config configs/dummy_pipeline.yaml
+python scripts/run_dummy_vlm_graspqa.py --config configs/dummy_pipeline.yaml
+python scripts/run_dummy_vlm_graspqa_with_parser.py --config configs/dummy_pipeline.yaml
+python scripts/run_graspqa.py --config configs/dummy_pipeline.yaml --run-name graspqa_cube_test
+python scripts/run_dummy_pipeline.py --config configs/dummy_pipeline.yaml --run-name vlm_pipeline_test
+python scripts/summarize_dummy_results.py
+pytest
+ruff check .
+black --check .
+```
+
+当前 GraspQA 数据流：
+
+```text
+annotation.json
+  ↓
+scene description
+  ↓
+GraspQA prompt
+  ↓
+DummyVLMClient
+  ↓
+raw_response
+  ↓
+response parser
+  ↓
+target_object
+```
+
 ## License
 
 MIT License.
