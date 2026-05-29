@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -9,6 +10,30 @@ from world_vla_graspqa.vlm.response_parser import (
     ParsedGraspQAResponse,
     parse_graspqa_response,
 )
+
+
+@dataclass(frozen=True)
+class VLMGraspQAResult:
+    """Full result returned by VLM-based GraspQA."""
+
+    target_object: str
+    raw_response: str
+    parse_success: bool
+    model_name: str
+    system_prompt: str
+    user_prompt: str
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert result to a JSON-serializable dictionary."""
+
+        return {
+            "target_object": self.target_object,
+            "raw_response": self.raw_response,
+            "parse_success": self.parse_success,
+            "model_name": self.model_name,
+            "system_prompt": self.system_prompt,
+            "user_prompt": self.user_prompt,
+        }
 
 
 class VLMGraspQA:
@@ -23,7 +48,7 @@ class VLMGraspQA:
         question: str,
         scene_annotation: dict[str, Any],
         image_path: str | Path | None = None,
-    ) -> ParsedGraspQAResponse:
+    ) -> VLMGraspQAResult:
         """Answer a grasping question using a VLM-style prompt and parser."""
 
         objects = get_scene_objects(scene_annotation)
@@ -41,7 +66,16 @@ class VLMGraspQA:
             image_path=image_path,
         )
 
-        return parse_graspqa_response(
+        parsed_response: ParsedGraspQAResponse = parse_graspqa_response(
             raw_response=response.text,
             candidate_objects=candidate_objects,
+        )
+
+        return VLMGraspQAResult(
+            target_object=parsed_response.target_object,
+            raw_response=parsed_response.raw_response,
+            parse_success=parsed_response.parse_success,
+            model_name=response.model_name,
+            system_prompt=prompt.system_prompt,
+            user_prompt=prompt.user_prompt,
         )

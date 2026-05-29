@@ -1,4 +1,4 @@
-from world_vla_graspqa.graspqa.vlm_graspqa import VLMGraspQA
+from world_vla_graspqa.graspqa.vlm_graspqa import VLMGraspQA, VLMGraspQAResult
 
 
 def make_scene_annotation():
@@ -38,8 +38,12 @@ def test_vlm_graspqa_answers_red_cube():
         scene_annotation=make_scene_annotation(),
     )
 
+    assert isinstance(result, VLMGraspQAResult)
     assert result.target_object == "red cube"
     assert result.parse_success is True
+    assert result.model_name == "dummy-vlm"
+    assert "Scene:" in result.user_prompt
+    assert "red cube" in result.user_prompt
 
 
 def test_vlm_graspqa_answers_yellow_banana():
@@ -53,3 +57,22 @@ def test_vlm_graspqa_answers_yellow_banana():
 
     assert result.target_object == "yellow banana"
     assert result.parse_success is True
+
+
+def test_vlm_graspqa_result_to_dict():
+    graspqa = VLMGraspQA()
+
+    result = graspqa.answer(
+        instruction="Pick up the red cube and place it into the blue bowl.",
+        question="Which object should the robot grasp?",
+        scene_annotation=make_scene_annotation(),
+    )
+
+    result_dict = result.to_dict()
+
+    assert result_dict["target_object"] == "red cube"
+    assert result_dict["raw_response"] == "red cube"
+    assert result_dict["parse_success"] is True
+    assert result_dict["model_name"] == "dummy-vlm"
+    assert "system_prompt" in result_dict
+    assert "user_prompt" in result_dict

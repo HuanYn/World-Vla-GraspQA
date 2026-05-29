@@ -71,17 +71,15 @@ def answer_graspqa(
 
     if mode == "dummy_vlm":
         graspqa = VLMGraspQA()
-        parsed_response = graspqa.answer(
+        graspqa_result = graspqa.answer(
             instruction=instruction,
             question=question,
             scene_annotation=scene_annotation,
             image_path=image_path,
         )
-        return parsed_response.target_object, {
-            "mode": mode,
-            "raw_response": parsed_response.raw_response,
-            "parse_success": parsed_response.parse_success,
-        }
+        result_dict = graspqa_result.to_dict()
+        result_dict["mode"] = mode
+        return graspqa_result.target_object, result_dict
 
     raise ValueError(f"Unsupported GraspQA mode: {mode}")
 
