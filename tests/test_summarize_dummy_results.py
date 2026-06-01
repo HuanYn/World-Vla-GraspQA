@@ -33,6 +33,14 @@ def create_dummy_result(path: Path, run_name: str, target_object: str) -> None:
             "predicted_success": 0.85,
             "world_model_type": "empirical",
         },
+        "closed_loop_result": {
+            "final_success": True,
+            "num_attempts": 1,
+            "final_action": {
+                "name": f"grasp({target_object})",
+                "gripper_pose": "top_down",
+            },
+        },
     }
 
     with path.open("w", encoding="utf-8") as f:
@@ -96,6 +104,9 @@ def test_summarize_result_extracts_key_fields(tmp_path):
     assert row["vlm_model_name"] == "dummy-vlm"
     assert row["vlm_raw_response"] == "yellow banana"
     assert row["vlm_parse_success"] is True
+    assert row["closed_loop_final_success"] is True
+    assert row["closed_loop_num_attempts"] == 1
+    assert row["closed_loop_final_pose"] == "top_down"
     assert row["config_path"] == "configs/banana.yaml"
 
 
@@ -116,6 +127,9 @@ def test_write_summary_creates_csv_file(tmp_path):
             "vlm_model_name": "dummy-vlm",
             "vlm_raw_response": "red cube",
             "vlm_parse_success": True,
+            "closed_loop_final_success": True,
+            "closed_loop_num_attempts": 1,
+            "closed_loop_final_pose": "top_down",
             "config_path": "configs/dummy_pipeline.yaml",
         }
     ]
@@ -138,3 +152,6 @@ def test_write_summary_creates_csv_file(tmp_path):
     assert loaded_rows[0]["vlm_model_name"] == "dummy-vlm"
     assert loaded_rows[0]["vlm_raw_response"] == "red cube"
     assert loaded_rows[0]["vlm_parse_success"] == "True"
+    assert loaded_rows[0]["closed_loop_final_success"] == "True"
+    assert loaded_rows[0]["closed_loop_num_attempts"] == "1"
+    assert loaded_rows[0]["closed_loop_final_pose"] == "top_down"

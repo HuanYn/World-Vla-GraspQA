@@ -6,6 +6,7 @@ from world_vla_graspqa.action.dummy_action_generator import DummyActionGenerator
 from world_vla_graspqa.graspqa.dummy_graspqa import DummyGraspQA
 from world_vla_graspqa.graspqa.vlm_graspqa import VLMGraspQA
 from world_vla_graspqa.perception.dummy_perception import DummyPerception
+from world_vla_graspqa.planner.closed_loop_runner import ClosedLoopRunner
 from world_vla_graspqa.planner.dummy_planner import DummyPlanner
 from world_vla_graspqa.utils.config import load_yaml_config
 from world_vla_graspqa.utils.image import get_image_info, load_image
@@ -14,6 +15,10 @@ from world_vla_graspqa.utils.logger import log_step
 from world_vla_graspqa.utils.scene import get_scene_objects, load_scene_annotation
 from world_vla_graspqa.world_model.dummy_world_model import DummyWorldModel
 from world_vla_graspqa.world_model.empirical_world_model import EmpiricalWorldModel
+from world_vla_graspqa.world_model.feedback import (
+    append_jsonl_records,
+    closed_loop_trace_to_outcome_records,
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -174,6 +179,9 @@ def main() -> None:
     planner = DummyPlanner()
     best_action = planner.select_action(scored_actions)
 
+    closed_loop_runner = ClosedLoopRunner(planner=planner)
+    closed_loop_result = closed_loop_runner.run(scored_actions)
+
     result = {
         "config_path": str(config_path),
         "run_name": args.run_name,
@@ -188,10 +196,22 @@ def main() -> None:
         "candidate_actions": candidate_actions,
         "scored_actions": scored_actions,
         "best_action": best_action,
+        "closed_loop_result": closed_loop_result,
     }
 
     result_path = run_dir / "result.json"
     save_json(result, result_path)
+
+    feedback_records = closed_loop_trace_to_outcome_records(
+        closed_loop_trace=closed_loop_result["closed_loop_trace"],
+        scene_id=scene_annotation.get("scene_id", ""),
+    )
+    feedback_path = (
+        PROJECT_ROOT / "outputs" / "action_outcomes" / "feedback_records.jsonl"
+    )
+    append_jsonl_records(feedback_records, feedback_path)
+
+    log_step("Feedback", f"Appended {len(feedback_records)} records to {feedback_path}")
 
     log_step(
         "Result",

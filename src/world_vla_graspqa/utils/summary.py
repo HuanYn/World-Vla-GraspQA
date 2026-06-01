@@ -18,6 +18,8 @@ def summarize_result(result_path: Path, project_root: Path) -> dict[str, Any]:
     best_action = result["best_action"]
     graspqa_result = result.get("graspqa_result", {})
     world_model_info = result.get("world_model_info", {})
+    closed_loop_result = result.get("closed_loop_result", {})
+    closed_loop_final_action = closed_loop_result.get("final_action") or {}
 
     return {
         "run_dir": str(result_path.parent.relative_to(project_root)),
@@ -33,6 +35,9 @@ def summarize_result(result_path: Path, project_root: Path) -> dict[str, Any]:
         "vlm_model_name": graspqa_result.get("model_name", ""),
         "vlm_raw_response": graspqa_result.get("raw_response", ""),
         "vlm_parse_success": graspqa_result.get("parse_success", ""),
+        "closed_loop_final_success": closed_loop_result.get("final_success", ""),
+        "closed_loop_num_attempts": closed_loop_result.get("num_attempts", ""),
+        "closed_loop_final_pose": closed_loop_final_action.get("gripper_pose", ""),
         "config_path": result.get("config_path", ""),
     }
 
@@ -65,6 +70,9 @@ def write_summary(rows: list[dict[str, Any]], output_path: Path) -> None:
         "vlm_model_name",
         "vlm_raw_response",
         "vlm_parse_success",
+        "closed_loop_final_success",
+        "closed_loop_num_attempts",
+        "closed_loop_final_pose",
         "config_path",
     ]
 
