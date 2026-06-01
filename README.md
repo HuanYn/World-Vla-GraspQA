@@ -596,6 +596,51 @@ planner
 best_action
 ```
 
+## Stage 5 Progress
+
+当前 Stage 5 已完成的内容：
+
+- 添加了 DummyExecutor，用于模拟动作执行结果。
+- 添加了 DummyCritic，用于判断执行是否成功。
+- 添加了 ClosedLoopRunner，支持失败后重新规划和重试。
+- 主 pipeline 已接入 closed-loop execution。
+- result.json 会保存 `closed_loop_result` 和 `closed_loop_trace`。
+- summary CSV 已加入 closed-loop 相关字段。
+- 添加了 feedback 导出工具，可以把 closed-loop trace 转成 action-outcome 记录。
+- pipeline 会把执行反馈追加写入 `outputs/action_outcomes/feedback_records.jsonl`。
+
+常用 Stage 5 命令：
+
+```bash
+python scripts/run_dummy_executor.py
+python scripts/run_dummy_critic.py
+python scripts/run_closed_loop_demo.py
+python scripts/run_dummy_pipeline.py --config configs/dummy_pipeline.yaml --run-name closed_loop_test
+python scripts/summarize_dummy_results.py
+pytest
+ruff check .
+black --check .
+```
+
+当前闭环执行数据流：
+
+```text
+scored_actions
+  ↓
+planner selects action
+  ↓
+executor executes action
+  ↓
+critic evaluates result
+  ↓
+success → finish
+failure → remove failed action and retry
+  ↓
+closed_loop_trace
+  ↓
+feedback action-outcome records
+```
+
 ## License
 
 MIT License.
