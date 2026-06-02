@@ -1,16 +1,9 @@
-from dataclasses import dataclass
 from pathlib import Path
 
-
-@dataclass(frozen=True)
-class VLMResponse:
-    """A simple response object returned by a VLM client."""
-
-    text: str
-    model_name: str
+from world_vla_graspqa.vlm.base_client import BaseVLMClient, VLMResponse
 
 
-class DummyVLMClient:
+class DummyVLMClient(BaseVLMClient):
     """A dummy VLM client for testing the GraspQA interface."""
 
     def __init__(self, model_name: str = "dummy-vlm") -> None:

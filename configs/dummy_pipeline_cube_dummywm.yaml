@@ -22,7 +22,10 @@ perception:
     graspable: true
 graspqa:
   question: Which object should the robot grasp?
-  mode: dummy_vlm
+  mode: vlm
+  vlm:
+    provider: dummy
+    model_name: dummy-vlm
 planner:
   strategy: max_success_probability
 world_model:

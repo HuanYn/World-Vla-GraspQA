@@ -5,6 +5,8 @@ from world_vla_graspqa.graspqa.vlm_graspqa import VLMGraspQA
 from world_vla_graspqa.utils.config import load_yaml_config
 from world_vla_graspqa.utils.io import create_run_dir, save_json
 from world_vla_graspqa.utils.scene import load_scene_annotation
+from world_vla_graspqa.vlm.errors import VLMClientNotEnabledError
+from world_vla_graspqa.vlm.factory import build_vlm_client
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -46,13 +48,20 @@ def main() -> None:
     question = config["graspqa"]["question"]
     scene_annotation = load_scene_annotation(annotation_path)
 
-    graspqa = VLMGraspQA()
-    result = graspqa.answer(
-        instruction=instruction,
-        question=question,
-        scene_annotation=scene_annotation,
-        image_path=image_path,
-    )
+    vlm_client = build_vlm_client(config.get("graspqa", {}).get("vlm", {}))
+    graspqa = VLMGraspQA(client=vlm_client)
+    try:
+        result = graspqa.answer(
+            instruction=instruction,
+            question=question,
+            scene_annotation=scene_annotation,
+            image_path=image_path,
+        )
+    except VLMClientNotEnabledError as error:
+        print("[GraspQA] VLM client is not enabled.")
+        print(f"[GraspQA] {error}")
+        print("[GraspQA] For local testing, use provider=dummy or provider=mock_real.")
+        raise SystemExit(1) from error
 
     output_dir = create_run_dir(
         output_root=PROJECT_ROOT / "outputs" / "graspqa",

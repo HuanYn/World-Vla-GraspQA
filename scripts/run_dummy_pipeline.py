@@ -13,6 +13,8 @@ from world_vla_graspqa.utils.image import get_image_info, load_image
 from world_vla_graspqa.utils.io import create_run_dir, save_json, save_yaml
 from world_vla_graspqa.utils.logger import log_step
 from world_vla_graspqa.utils.scene import get_scene_objects, load_scene_annotation
+from world_vla_graspqa.vlm.errors import VLMClientNotEnabledError
+from world_vla_graspqa.vlm.factory import build_vlm_client
 from world_vla_graspqa.world_model.dummy_world_model import DummyWorldModel
 from world_vla_graspqa.world_model.empirical_world_model import EmpiricalWorldModel
 from world_vla_graspqa.world_model.feedback import (
@@ -60,6 +62,7 @@ def answer_graspqa(
     detected_objects: list[dict[str, Any]],
     scene_annotation: dict[str, Any],
     image_path: Path,
+    vlm_config: dict[str, Any] | None = None,
 ) -> tuple[str, dict[str, Any]]:
     """Answer the GraspQA question with either rule-based or VLM-style backend."""
 
@@ -76,8 +79,9 @@ def answer_graspqa(
             "parse_success": True,
         }
 
-    if mode == "dummy_vlm":
-        graspqa = VLMGraspQA()
+    if mode in {"dummy_vlm", "vlm"}:
+        vlm_client = build_vlm_client(vlm_config)
+        graspqa = VLMGraspQA(client=vlm_client)
         graspqa_result = graspqa.answer(
             instruction=instruction,
             question=question,
@@ -135,6 +139,7 @@ def main() -> None:
 
     question = config["graspqa"]["question"]
     graspqa_mode = config["graspqa"].get("mode", "rule")
+    vlm_config = config["graspqa"].get("vlm", {})
 
     world_model, world_model_info = build_world_model(config)
 
@@ -161,14 +166,23 @@ def main() -> None:
     perception = DummyPerception(objects=objects)
     detected_objects = perception.detect_objects()
 
-    target_object, graspqa_result = answer_graspqa(
-        mode=graspqa_mode,
-        instruction=instruction,
-        question=question,
-        detected_objects=detected_objects,
-        scene_annotation=scene_annotation,
-        image_path=image_path,
-    )
+    try:
+        target_object, graspqa_result = answer_graspqa(
+            mode=graspqa_mode,
+            instruction=instruction,
+            question=question,
+            detected_objects=detected_objects,
+            scene_annotation=scene_annotation,
+            image_path=image_path,
+            vlm_config=vlm_config,
+        )
+    except VLMClientNotEnabledError as error:
+        log_step("GraspQA", "VLM client is not enabled.")
+        log_step("GraspQA", str(error))
+        log_step(
+            "GraspQA", "For local testing, use provider=dummy or provider=mock_real."
+        )
+        raise SystemExit(1) from error
     log_step("GraspQA", f"Answer: {target_object}")
 
     action_generator = DummyActionGenerator()

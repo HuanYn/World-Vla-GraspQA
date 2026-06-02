@@ -1,4 +1,11 @@
-from world_vla_graspqa.vlm.dummy_client import DummyVLMClient, VLMResponse
+from world_vla_graspqa.vlm.base_client import BaseVLMClient, VLMResponse
+from world_vla_graspqa.vlm.dummy_client import DummyVLMClient
+
+
+def test_dummy_vlm_client_is_base_vlm_client():
+    client = DummyVLMClient()
+
+    assert isinstance(client, BaseVLMClient)
 
 
 def test_dummy_vlm_client_returns_red_cube_for_red_cube_prompt():

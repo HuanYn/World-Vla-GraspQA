@@ -1,9 +1,9 @@
 project:
   name: World-VLA-GraspQA
-  stage: dummy_pipeline_banana
+  stage: mock_real_vlm_pipeline
 scene:
   image_path: data/raw/sample_scenes/tabletop_dummy_scene.png
-  instruction: Pick up the yellow banana and place it into the blue bowl.
+  instruction: Pick up the red cube and place it into the blue bowl.
   annotation_path: data/annotations/sample_scenes/tabletop_dummy_scene.json
 perception:
   mode: dummy
@@ -24,9 +24,11 @@ graspqa:
   question: Which object should the robot grasp?
   mode: vlm
   vlm:
-    provider: dummy
-    model_name: dummy-vlm
+    provider: mock_real
+    model_name: mock-real-vlm
 planner:
   strategy: max_success_probability
 world_model:
-  mode: dummy
+  mode: empirical
+  dataset_path: data/action_outcomes/dummy_action_outcomes.json
+  default_success: 0.5

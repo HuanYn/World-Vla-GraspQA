@@ -5,6 +5,7 @@ from typing import Any
 from world_vla_graspqa.graspqa.prompt_builder import build_graspqa_prompt
 from world_vla_graspqa.utils.prompt import build_scene_description
 from world_vla_graspqa.utils.scene import get_scene_objects
+from world_vla_graspqa.vlm.base_client import BaseVLMClient
 from world_vla_graspqa.vlm.dummy_client import DummyVLMClient
 from world_vla_graspqa.vlm.response_parser import (
     ParsedGraspQAResponse,
@@ -39,7 +40,7 @@ class VLMGraspQAResult:
 class VLMGraspQA:
     """A GraspQA module backed by a VLM-style client."""
 
-    def __init__(self, client: DummyVLMClient | None = None) -> None:
+    def __init__(self, client: BaseVLMClient | None = None) -> None:
         self.client = client or DummyVLMClient()
 
     def answer(
