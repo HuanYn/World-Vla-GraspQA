@@ -641,6 +641,82 @@ closed_loop_trace
 feedback action-outcome records
 ```
 
+## Stage 7 Progress
+
+当前 Stage 7 已完成的内容：
+
+- 构建了 world model training dataset。
+- 将静态 action-outcome 数据和 closed-loop feedback records 合并成统一训练样本。
+- 新增 `outputs/world_model_training/training_samples.jsonl` 作为训练数据输出。
+- 添加了 Logistic Regression Mini World Model 训练流程。
+- 训练后保存 `outputs/world_model_training/logistic_world_model.pkl` checkpoint。
+- 添加了 LearnedWorldModel，可以加载 checkpoint 并为候选动作预测成功率。
+- 主 pipeline 已支持 `world_model.mode = learned`。
+- summary CSV 已加入 learned world model 的 `world_model_model_path` 字段。
+- 添加了 dummy / empirical / learned 三方 world model 对比脚本。
+
+常用 Stage 7 命令：
+
+```bash
+python scripts/build_world_model_training_data.py
+python scripts/train_logistic_world_model.py
+python scripts/run_learned_world_model.py --target-object "red cube"
+python scripts/run_dummy_pipeline.py --config configs/dummy_pipeline_learned_wm.yaml --run-name learned_wm_pipeline_test
+python scripts/run_world_model_three_way_comparison.py
+python scripts/summarize_dummy_results.py
+pytest
+ruff check .
+black --check .
+```
+
+当前三类 world model：
+
+```text
+DummyWorldModel
+  ↓
+手写固定动作成功率，用于最小 pipeline 验证。
+
+EmpiricalWorldModel
+  ↓
+基于历史 action-outcome records 统计成功率。
+
+LearnedWorldModel
+  ↓
+基于 training_samples.jsonl 训练 Logistic Regression，加载 checkpoint 后预测动作成功率。
+```
+
+当前 learned world model 数据流：
+
+```text
+dummy_action_outcomes.json
+  +
+feedback_records.jsonl
+  ↓
+training_samples.jsonl
+  ↓
+Logistic Regression training
+  ↓
+logistic_world_model.pkl
+  ↓
+LearnedWorldModel
+  ↓
+candidate actions
+  ↓
+predicted_success
+  ↓
+planner / closed-loop runner
+```
+
+当前 world model 三方对比：
+
+```text
+same task + same GraspQA + same planner
+  ↓
+dummy / empirical / learned world model
+  ↓
+compare predicted_success, selected action, closed_loop_success
+```
+
 ## License
 
 MIT License.

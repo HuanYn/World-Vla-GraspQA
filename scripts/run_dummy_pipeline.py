@@ -17,6 +17,7 @@ from world_vla_graspqa.vlm.errors import VLMClientNotEnabledError
 from world_vla_graspqa.vlm.factory import build_vlm_client
 from world_vla_graspqa.world_model.dummy_world_model import DummyWorldModel
 from world_vla_graspqa.world_model.empirical_world_model import EmpiricalWorldModel
+from world_vla_graspqa.world_model.learned_world_model import LearnedWorldModel
 from world_vla_graspqa.world_model.feedback import (
     append_jsonl_records,
     closed_loop_trace_to_outcome_records,
@@ -117,6 +118,19 @@ def build_world_model(config: dict[str, Any]) -> tuple[Any, dict[str, Any]]:
             "mode": "empirical",
             "dataset_path": str(dataset_path),
             "default_success": default_success,
+        }
+
+    if mode == "learned":
+        model_path = resolve_project_path(world_model_config["model_path"])
+        success_threshold = float(world_model_config.get("success_threshold", 0.5))
+        world_model = LearnedWorldModel.from_checkpoint(
+            checkpoint_path=model_path,
+            success_threshold=success_threshold,
+        )
+        return world_model, {
+            "mode": "learned",
+            "model_path": str(model_path),
+            "success_threshold": success_threshold,
         }
 
     raise ValueError(f"Unsupported world model mode: {mode}")
